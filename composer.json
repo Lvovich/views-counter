@@ -1,12 +1,12 @@
 {
-    "name": "test/viewscounter",
-    "description": "Views counter based on a unique user ID",
+    "name": "test/views",
+    "description": "Views of articles based on a unique user ID",
     "license": "MIT",
     "prefer-stable": true,
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "Test\\ViewsCounter\\": "lib/"
+            "Test\\Views\\": "lib/"
         }
     }
 }
