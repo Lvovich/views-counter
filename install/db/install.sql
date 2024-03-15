@@ -1,36 +1,46 @@
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+-- MySQL Workbench Forward Engineering
 
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Table structure for table `test_views_users`
---
-
+-- -----------------------------------------------------
+-- Table `test_views_users`
+-- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `test_views_users` (
-    `ID` int UNSIGNED NOT NULL AUTO_INCREMENT,
-    `COOKIE_ID` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-    PRIMARY KEY (`ID`),
-    UNIQUE KEY `COOKIE_ID` (`COOKIE_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                                                  `ID` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                                                  `COOKIE_ID` CHAR(32) NOT NULL,
+                                                  PRIMARY KEY (`ID`),
+                                                  UNIQUE INDEX `COOKIE_ID_UNIQUE` (`COOKIE_ID` ASC) VISIBLE)
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_unicode_ci;
 
---
--- Table structure for table `test_articles_views`
---
 
+-- -----------------------------------------------------
+-- Table `test_articles_views`
+-- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `test_articles_views` (
-    `USER_ID` int UNSIGNED NOT NULL,
-    `ELEMENT_ID` int UNSIGNED NOT NULL,
-    `TIMESTAMP` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                                                     `USER_ID` INT UNSIGNED NOT NULL,
+                                                     `ELEMENT_ID` INT NOT NULL,
+                                                     `TIMESTAMP` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                                     UNIQUE INDEX `USER_ID_ELEMENT_ID` (`USER_ID` ASC, `ELEMENT_ID` ASC) VISIBLE,
+                                                     INDEX `fk_test_articles_views_b_iblock_element_idx` (`ELEMENT_ID` ASC) VISIBLE,
+                                                     CONSTRAINT `fk_test_articles_views_test_views_users`
+                                                         FOREIGN KEY (`USER_ID`)
+                                                             REFERENCES `test_views_users` (`ID`)
+                                                             ON DELETE CASCADE
+                                                             ON UPDATE NO ACTION,
+                                                     CONSTRAINT `fk_test_articles_views_b_iblock_element`
+                                                         FOREIGN KEY (`ELEMENT_ID`)
+                                                             REFERENCES `b_iblock_element` (`ID`)
+                                                             ON DELETE CASCADE
+                                                             ON UPDATE NO ACTION)
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_unicode_ci;
 
-COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
