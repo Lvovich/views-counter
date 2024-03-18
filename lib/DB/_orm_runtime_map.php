@@ -7,6 +7,7 @@ use Bitrix\Main\ORM\Objectify\EntityObject;
  * @method string getCookieId()
  *
  * @method ViewsUser setCookieId(string $cookieId)
+ * @method static getInstance()
  */
 class EO_ViewsUsers extends EntityObject {}
 

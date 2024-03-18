@@ -17,8 +17,6 @@ use Bitrix\Main\SystemException;
  **/
 abstract class ViewsUsersTable extends DataManager
 {
-    private static ViewsUser $current;
-
     public static function getTableName(): string
     {
         return 'test_views_users';
