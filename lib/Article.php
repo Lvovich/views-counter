@@ -97,12 +97,27 @@ class Article
         return $this->viewsCount;
     }
 
+    public static function getViewsCountList(array $articlesIds): array
+    {
+        try {
+            $dbRes = ArticleViewsTable::getList([
+                'filter' => ['ELEMENT_ID'=>($articlesIds ?: [0])],
+                'select' => ['ELEMENT_ID', new ExpressionField('CNT', 'COUNT(%s)', ['USER_ID'])],
+            ])->fetchAll();
+
+            return array_combine(array_column($dbRes, 'ELEMENT_ID'), array_column($dbRes, 'CNT'));
+        }
+        catch (SystemException) {
+            return [];
+        }
+    }
+
     private function countViews(): int
     {
         try {
             $res = ArticleViewsTable::getList([
                 'filter' => ['ELEMENT_ID'=>$this->articleId],
-                'select' => [new ExpressionField('CNT', 'COUNT(%s)', ['USER_ID'])]
+                'select' => [new ExpressionField('CNT', 'COUNT(%s)', ['USER_ID'])],
             ])->fetch();
         }
         catch (SystemException) {
