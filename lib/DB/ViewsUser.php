@@ -14,7 +14,7 @@ class ViewsUser extends EO_ViewsUsers
 
     private const SALT = '9t%+mVdkueX(CI&m+y-G8|+#.dnT;d0K';
 
-    private static ?ViewsUser $instance = null; // change instance on data modification
+    private static ?ViewsUser $instance = null;
 
     public static function getInstance(): ViewsUser|null
     {
