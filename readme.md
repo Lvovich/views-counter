@@ -51,7 +51,7 @@ $viewsList = [];
 
 try {
     if (Loader::includeModule('test.views')) {
-        $viewsList = Views\Article::getViewsCountList($arResult['ITEMS_IDS_LIST']);
+        $viewsList = Views\Article::getViewsCountList($arResult['ITEMS_IDS_LIST'] ?? []);
     }
 }
 catch (Exception) {
