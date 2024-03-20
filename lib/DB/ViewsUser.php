@@ -2,7 +2,6 @@
 namespace Test\Views\DB;
 
 use Bitrix\Main\Application;
-use Bitrix\Main\Context;
 use Bitrix\Main\Web\Cookie;
 use Exception;
 
@@ -19,23 +18,11 @@ class ViewsUser extends EO_ViewsUsers
     public static function getInstance(): ViewsUser|null
     {
         if (!self::$instance) {
-            $context = Application::getInstance()->getContext();
-            $cookieId = $context->getRequest()->getCookie(self::COOKIE_NAME);
+            $request = Application::getInstance()->getContext()->getRequest();
 
             try {
-                self::$instance = ViewsUsersTable::getList(['filter'=>['COOKIE_ID'=>$cookieId]])->fetchObject();
-
-                if (!self::$instance) { // attempts to add a new user with unique cookieId
-                    $attempts = 3;
-
-                    do { // in a loop, since the identifier $newCookieId can repeat an existing one
-                        $newCookieId = md5(self::SALT . rand());
-
-                        self::setCookie($context, $newCookieId);
-                        self::$instance = (new self())->setCookieId($newCookieId);
-
-                    } while (!self::$instance->save()->isSuccess() && --$attempts>0);
-                }
+                $filter = ['COOKIE_ID'=>$request->getCookie(self::COOKIE_NAME)];
+                self::$instance = ViewsUsersTable::getList(['filter'=>$filter])->fetchObject() ?? self::addNew();
             }
             catch (Exception) {
             }
@@ -44,13 +31,28 @@ class ViewsUser extends EO_ViewsUsers
         return self::$instance;
     }
 
-    private static function setCookie(Context $context, string $newCookieId)
+    private static function addNew(): ViewsUser|null
     {
-        $cookie = (new Cookie(self::COOKIE_NAME, $newCookieId, strtotime(self::COOKIE_EXP)))
-            ->setPath('/')
-            ->setHttpOnly(false)
-            ->setDomain($context->getRequest()->getHttpHost());
+        $attempts = 3;
 
-        $context->getResponse()->addCookie($cookie);
+        do { // in a loop, since the identifier $newCookieId can repeat an existing one
+            $newCookieId = md5(self::SALT . rand());
+
+            $newUser = (new self())->setCookieId($newCookieId);
+
+            try {
+                if ($newUser->save()->isSuccess()) {
+                    Application::getInstance()->getContext()->getResponse()->addCookie(
+                        new Cookie(self::COOKIE_NAME, $newCookieId, strtotime(self::COOKIE_EXP))
+                    );
+
+                    return $newUser;
+                }
+            }
+            catch (Exception) {
+            }
+        } while (--$attempts);
+
+        return null;
     }
 }
