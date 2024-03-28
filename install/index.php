@@ -1,9 +1,13 @@
 <?php
+use Bitrix\Main\IO\Directory;
+use Bitrix\Main\IO\File;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\ModuleManager;
 
 class test_views extends CModule
 {
+    private const JUST_INSTALLED = 'dc3149f35c18ba7b4bfbf148a53882c1';
+
     public $MODULE_ID = 'test.views';
 
     public function __construct()
@@ -22,22 +26,28 @@ class test_views extends CModule
 
         $this->PARTNER_NAME = 'Test';
         $this->PARTNER_URI = 'https://test.test/';
+
+        if ($_REQUEST['mod']===$this->MODULE_ID && $_REQUEST['result']==='OK' && $_SESSION[self::JUST_INSTALLED]) {
+            $this->checkComposerInstalled();
+            unset($_SESSION[self::JUST_INSTALLED]);
+        }
     }
 
     public function DoInstall(): bool
     {
-        if (!IsModuleInstalled($this->MODULE_ID)) {
-            ModuleManager::registerModule($this->MODULE_ID);
-
-            return $this->InstallDB();
+        if (ModuleManager::isModuleInstalled($this->MODULE_ID)) {
+            return true;
         }
 
-        return true;
+        ModuleManager::registerModule($this->MODULE_ID);
+
+        return $_SESSION[self::JUST_INSTALLED] = $this->InstallDB();
     }
 
     public function DoUninstall(): bool
     {
         $this->UnInstallDB();
+        $this->UnInstallFiles();
 
         ModuleManager::unRegisterModule($this->MODULE_ID);
 
@@ -58,5 +68,24 @@ class test_views extends CModule
     public function UnInstallDB()
     {
         $GLOBALS['DB']->RunSQLBatch(__DIR__ . '/db/uninstall.sql');
+    }
+
+    public function UnInstallFiles()
+    {
+        Directory::deleteDirectory(realpath(__DIR__ . '/..') . '/vendor');
+    }
+
+    private function checkComposerInstalled()
+    {
+        if (!(new File(__DIR__ . '/../vendor/autoload.php'))->isExists()) {
+            $selector = '#adm-workarea .adm-info-message-green .adm-info-message-title';
+
+            echo "<script>let mess=document.createTextNode('".GetMessage('TEST_NO_COMPOSER_INSTALLED')."');".
+                    "setTimeout(function() {".
+                        "let messTitle = document.querySelector('$selector');".
+                        "messTitle.parentNode.insertBefore(mess, messTitle.nextSibling);".
+                    "}, 100);".
+                '</script>';
+        }
     }
 }
